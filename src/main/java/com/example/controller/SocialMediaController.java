@@ -4,6 +4,7 @@ package com.example.controller;
 import com.example.entity.Account;
 import com.example.exception.DuplicateResourceException;
 import com.example.exception.InvalidRequestException;
+import com.example.exception.ResourceNotFoundException;
 import com.example.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class SocialMediaController {
 
-    private AccountService accountService;
+    private final AccountService accountService;
 
     @Autowired
     public SocialMediaController(AccountService accountService) {
@@ -32,6 +33,12 @@ public class SocialMediaController {
         return ResponseEntity.status(HttpStatus.OK).body(accountService.register(account));
     }
 
+    @PostMapping("login")
+    public ResponseEntity<Account> login(@RequestBody Account account){
+        Account loggedInAccount = accountService.login(account);
+        return ResponseEntity.status(HttpStatus.OK).body(loggedInAccount);
+    }
+
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<String> handleDuplicateResourceException(DuplicateResourceException exception){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
@@ -41,6 +48,13 @@ public class SocialMediaController {
     public ResponseEntity<String> handleInvalidRequestException(InvalidRequestException exception){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
     }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException exception){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getMessage());
+    }
+
+
 
 
 
