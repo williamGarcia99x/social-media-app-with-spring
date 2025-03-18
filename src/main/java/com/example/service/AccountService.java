@@ -47,6 +47,10 @@ public class AccountService {
                 orElseThrow(() -> new ResourceNotFoundException("No account was found with given credentials"));
     }
 
+    public Account getUserById(int id) throws ResourceNotFoundException{
+        return accountRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User with this ID does not exist"));
+    }
+
 
 
 

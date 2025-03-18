@@ -1,4 +1,63 @@
 package com.example.service;
 
+import com.example.entity.Account;
+import com.example.entity.Message;
+import com.example.exception.InvalidRequestException;
+import com.example.exception.ResourceNotFoundException;
+import com.example.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
 public class MessageService {
+
+
+    private final MessageRepository messageRepository;
+    private final AccountService accountService;
+
+    @Autowired
+    public MessageService(MessageRepository messageRepository, AccountService accountService) {
+        this.messageRepository = messageRepository;
+        this.accountService = accountService;
+    }
+
+
+    public Message createMessage(Message message) throws InvalidRequestException{
+
+        //validation
+        try {
+            accountService.getUserById(message.getPostedBy());
+        } catch (ResourceNotFoundException e){
+            throw new InvalidRequestException("Message needs to be posted by a valid user.");
+        }
+
+        if(message.getMessageText().isEmpty()){
+            throw new InvalidRequestException("Message cannot be blank.");
+        }
+
+        if(message.getMessageText().length() > 255){
+            throw new InvalidRequestException("Message cannot be over 255 characters.");
+        }
+
+        return messageRepository.save(message);
+
+
+    }
+
+    public Message getMessageById(int messageId) throws ResourceNotFoundException{
+        return messageRepository.findById(messageId).orElseThrow(() -> new ResourceNotFoundException("Message with this ID" +
+                " does not exist"));
+    }
+
+    public List<Message> getMessages(){
+        return messageRepository.findAll();
+    }
+
+
+
+
+
+
 }

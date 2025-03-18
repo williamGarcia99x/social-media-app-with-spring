@@ -2,14 +2,18 @@ package com.example.controller;
 
 
 import com.example.entity.Account;
+import com.example.entity.Message;
 import com.example.exception.DuplicateResourceException;
 import com.example.exception.InvalidRequestException;
 import com.example.exception.ResourceNotFoundException;
 import com.example.service.AccountService;
+import com.example.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
@@ -22,10 +26,12 @@ import org.springframework.web.bind.annotation.*;
 public class SocialMediaController {
 
     private final AccountService accountService;
+    private final MessageService messageService;
 
     @Autowired
-    public SocialMediaController(AccountService accountService) {
+    public SocialMediaController(AccountService accountService, MessageService messageService) {
         this.accountService = accountService;
+        this.messageService = messageService;
     }
 
     @PostMapping("/register")
@@ -33,10 +39,34 @@ public class SocialMediaController {
         return ResponseEntity.status(HttpStatus.OK).body(accountService.register(account));
     }
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public ResponseEntity<Account> login(@RequestBody Account account){
         Account loggedInAccount = accountService.login(account);
         return ResponseEntity.status(HttpStatus.OK).body(loggedInAccount);
+    }
+
+    @PostMapping("/messages")
+    public ResponseEntity<Message> createMessage(@RequestBody Message message){
+        Message createdMessage = messageService.createMessage(message);
+        return ResponseEntity.status(HttpStatus.OK).body(createdMessage);
+    }
+
+    @GetMapping("/messages")
+    public ResponseEntity<List<Message>> getMessages(){
+        List<Message> messages = messageService.getMessages();
+        return ResponseEntity.status(HttpStatus.OK).body(messages);
+    }
+
+    @GetMapping("/messages/{messageId}")
+    public ResponseEntity<Message> getMessageById(@PathVariable Integer messageId){
+
+        Message messageToFind = null;
+        try{
+            messageToFind = messageService.getMessageById(messageId);
+        } catch (ResourceNotFoundException ignored){
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(messageToFind);
     }
 
     @ExceptionHandler(DuplicateResourceException.class)
