@@ -1,6 +1,5 @@
 package com.example.service;
 
-import com.example.entity.Account;
 import com.example.entity.Message;
 import com.example.exception.InvalidRequestException;
 import com.example.exception.ResourceNotFoundException;
@@ -55,9 +54,41 @@ public class MessageService {
         return messageRepository.findAll();
     }
 
+    public Integer deleteMessage(Integer messageId){
+
+        if(messageRepository.findById(messageId).isPresent()){
+            messageRepository.deleteById(messageId);
+            return 1;
+        }
+        return 0;
+
+    }
+
+    public void patchMessage(Integer messageId, Message message) throws InvalidRequestException{
+
+        //validation
+        Message messageToUpdate = messageRepository.findById(messageId).orElseThrow(() -> new InvalidRequestException("Cannot " +
+                "update a message with this ID because it does not exist."));
 
 
+        if(message.getMessageText().isEmpty()){
+            throw new InvalidRequestException("Message cannot be blank.");
+        }
 
+        if(message.getMessageText().length() > 255){
+            throw new InvalidRequestException("Message cannot be over 255 characters.");
+        }
+
+        messageToUpdate.setMessageText(message.getMessageText());
+
+        messageRepository.save(messageToUpdate);
+
+    }
+
+    public List<Message> getMessagesByAccountId(Integer accountId){
+
+        return (List<Message>) messageRepository.findByAccount_PostedBy(accountId);
+    }
 
 
 }
